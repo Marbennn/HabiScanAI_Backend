@@ -1,36 +1,32 @@
-HabiScanAI-Backend/
-├─ habiscan_backend/              # Django project settings
+HabiScanAI_Backend/
+├─ habiscan_backend/                  # Django project folder
 │   ├─ __init__.py
-│   ├─ settings.py                # Django settings
-│   ├─ urls.py                    # URL configuration
 │   ├─ asgi.py
+│   ├─ settings.py
+│   ├─ urls.py                        # Project URLs (includes admin, API, root path)
+│   ├─ views.py                       # Home page view
 │   └─ wsgi.py
 │
-├─ imagehistory/                  # Django app for Image History
+├─ imagehistory/                       # Django app for image history
 │   ├─ __init__.py
 │   ├─ admin.py
 │   ├─ apps.py
-│   ├─ models.py                  # Image model
-│   ├─ serializers.py             # DRF serializers
-│   ├─ views.py                   # Upload & Home views
-│   ├─ urls.py                    # App-specific URLs
-│   └─ migrations/                
-│       └─ __init__.py
+│   ├─ models.py                       # ImageHistory model
+│   ├─ serializers.py                  # DRF serializer
+│   ├─ urls.py                         # App URLs (ModelViewSet or function-based)
+│   └─ views.py                        # ImageHistory views
 │
-├─ media/                         # Uploaded images will be stored here
-│   └─ images/                    
-│       └─ (uploaded files)
+├─ media/                              # Uploaded media files (images)
 │
-├─ pictures/                      # Test images for upload
-│   └─ test_image.jpg             
+├─ pictures/                           # Test images folder
+│   └─ test_image.jpg                  # Example image to upload
 │
-├─ venv/                          # Python virtual environment
-│   └─ (env files)
+├─ venv/                               # Python virtual environment
 │
-├─ db.sqlite3                      # SQLite database
-├─ manage.py                       # Django management script
-├─ test_upload.py                  # Test script for single image upload
-└─ upload_images.py                # Single-image uploader from pictures folder
+├─ db.sqlite3                           # SQLite database
+├─ manage.py                            # Django management file
+├─ upload_images.py                     # Script to upload images via API
+└─ requirements.txt                     # Python dependencies
 
 1. Create and activate virtual environment
 - python -m venv venv
