@@ -55,15 +55,15 @@ python manage.py migrate
 
 4. Run the development server
 ```bash
-- python manage.py runserver
+python manage.py runserver
 ```
-Server runs at: http://127.0.0.1:8000/
-API for image history: http://127.0.0.1:8000/api/history/images/
+- Server runs at: http://127.0.0.1:8000/
+- API for image history: http://127.0.0.1:8000/api/history/images/
 
 5. Upload Test Images
 Place your test images in the pictures/ folder.
 Run the single image uploader:
 ```bash
-- python upload_images.py
+python upload_images.py
 ```
 Check uploaded images in media/images/ or via API:
