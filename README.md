@@ -1,3 +1,6 @@
+## Project Structure
+
+```bash
 HabiScanAI_Backend/
 ├─ habiscan_backend/                  # Django project folder
 │   ├─ __init__.py
@@ -27,6 +30,8 @@ HabiScanAI_Backend/
 ├─ manage.py                          # Django management file
 ├─ upload_images.py                   # Script to upload images via API
 └─ requirements.txt                   # Python dependencies
+```
+
 
 1. Create and activate virtual environment
 - python -m venv venv
