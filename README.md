@@ -34,29 +34,36 @@ HabiScanAI_Backend/
 
 
 1. Create and activate virtual environment
-- python -m venv venv
-
-- venv\Scripts\activate.bat              # Windows
-- source venv/bin/activate               # macOS / Linux
+```bash
+python -m venv venv
+```
+```bash
+venv\Scripts\activate.bat              # Windows
+source venv/bin/activate               # macOS / Linux
+```
 
 2. Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
 3. Apply migrations
-- python manage.py makemigrations
-- python manage.py migrate
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
 
 4. Run the development server
+```bash
 - python manage.py runserver
+```
 Server runs at: http://127.0.0.1:8000/
 API for image history: http://127.0.0.1:8000/api/history/images/
 
 5. Upload Test Images
 Place your test images in the pictures/ folder.
 Run the single image uploader:
+```bash
 - python upload_images.py
+```
 Check uploaded images in media/images/ or via API:
-
-Scripts
-test_upload.py → Basic test script to upload a single image.
-upload_images.py → Uploads a single image from the pictures/ folder.
