@@ -12,7 +12,8 @@ HabiScanAI_Backend/
 ├─ pictures/                          # Test images
 ├─ manage.py                          # Django management
 ├─ requirements.txt                   # Python dependencies
-└─ upload_images.py                   # Example client script
+├─ upload_images.py                   # Example upload script
+└─ test_bulk_delete.py                # Interactive bulk delete script
 ```
 
 ### 2) Setup
@@ -58,15 +59,12 @@ python manage.py runserver
 
 ### 3) Authentication (Token-based)
 
-1. Obtain token
-```bash
-curl -X POST http://127.0.0.1:8000/api/auth/token/ \
-  -H "Content-Type: application/json" \
-  -d '{"username":"<your_user>", "password":"<your_pass>"}'
-```
-Response:
-```json
-{ "token": "<TOKEN>" }
+1. Obtain token (PowerShell)
+```powershell
+$body = @{ username = "your_username"; password = "your_password" } | ConvertTo-Json
+$response = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/auth/token/" -ContentType "application/json" -Body $body
+$token = $response.token
+$env:HABISCAN_TOKEN = $token
 ```
 
 2. Use token in subsequent requests
@@ -74,48 +72,99 @@ Add header: `Authorization: Token <TOKEN>`
 
 ### 4) Image History API
 
-- List current user history
-```bash
-curl -H "Authorization: Token <TOKEN>" \
-  http://127.0.0.1:8000/api/history/images/
+- List current user history (PowerShell)
+```powershell
+$token = $env:HABISCAN_TOKEN
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Token $token" }
 ```
 
-- Upload new image (multipart form)
-```bash
-curl -H "Authorization: Token <TOKEN>" \
-  -F image=@pictures/test_image.jpg \
-  http://127.0.0.1:8000/api/history/images/
+- Upload new image (PowerShell)
+```powershell
+$token = $env:HABISCAN_TOKEN
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Token $token" } -Form @{ image = Get-Item ".\pictures\test_image.jpg" }
 ```
-Notes:
-- Deduplicated per-user by content hash. Re-uploading same image returns existing record.
-- Query params: `?hash=<sha256>` and/or `?filename=<name>` to filter results.
 
-### 5) Example Python client
+- Delete single image
+```powershell
+$token = $env:HABISCAN_TOKEN
+Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/123/" -Headers @{ "Authorization" = "Token $token" }
+```
 
-Update `upload_images.py` to set your token and run:
+- Bulk delete multiple images
+```powershell
+$token = $env:HABISCAN_TOKEN
+$body = @{ ids = @(1, 2, 3) } | ConvertTo-Json
+Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/bulk_delete/" -Headers @{ "Authorization" = "Token $token"; "Content-Type" = "application/json" } -Body $body
+```
+
+**Features:**
+- ✅ Deduplicated per-user by content hash. Re-uploading same image returns existing record.
+- ✅ Query params: `?hash=<sha256>` and/or `?filename=<name>` to filter results.
+- ✅ Pagination: `?page=1` (20 items per page).
+- ✅ Automatic file cleanup when deleting records.
+
+### 5) Example Python Scripts
+
+**Upload images:**
 ```bash
+# Set token first
+$env:HABISCAN_TOKEN = "your_token_here"
+
+# Upload image
 python upload_images.py
 ```
 
-### 6) File lifecycle & maintenance
-
-- Deleting an image record removes the file from disk (DEV) or storage (PROD) automatically.
-- Replacing an image file deletes the old file.
-- Reconcile DB and filesystem:
+**Interactive bulk delete:**
 ```bash
+# Set token first  
+$env:HABISCAN_TOKEN = "your_token_here"
+
+# Run interactive delete script
+python test_bulk_delete.py
+```
+The bulk delete script will:
+- Show all your images with numbered options
+- Let you select which ones to delete (e.g., "1,3,5" or "all")
+- Ask for confirmation before deleting
+- Only delete what you selected
+
+### 6) File Lifecycle & Maintenance
+
+**Automatic cleanup:**
+- ✅ Deleting an image record removes the file from disk automatically
+- ✅ Replacing an image file deletes the old file
+- ✅ Signals handle all file cleanup operations
+
+**Manual maintenance:**
+```bash
+# Dry-run: see what would be cleaned up
 python manage.py sync_images --dry-run
+
+# Actually clean up orphaned files
 python manage.py sync_images --delete-unreferenced
 ```
 
-### 7) Mobile/Web integration tips
+### 7) API Endpoints Summary
 
-- Store the user token securely (Keychain/Keystore/SecureStorage).
-- Always send `Authorization: Token <TOKEN>`.
-- Use pagination (page size 20) when listing history: `?page=1`.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/history/images/` | List user's images (paginated) |
+| POST | `/api/history/images/` | Upload new image (deduplicated) |
+| DELETE | `/api/history/images/{id}/` | Delete single image |
+| DELETE | `/api/history/images/bulk_delete/` | Delete multiple images |
+| POST | `/api/auth/token/` | Get authentication token |
 
-### 8) Optional: CORS (for browser clients)
+### 8) Mobile/Web Integration Tips
 
-Install and enable if serving API to a separate web origin.
+- Store the user token securely (Keychain/Keystore/SecureStorage)
+- Always send `Authorization: Token <TOKEN>` header
+- Use pagination when listing history: `?page=1` (20 items per page)
+- Handle deduplication: same image returns existing record with status 200
+- Use bulk delete for better UX when removing multiple images
+
+### 9) Optional: CORS (for browser clients)
+
+Install and enable if serving API to a separate web origin:
 ```bash
 pip install django-cors-headers
 ```

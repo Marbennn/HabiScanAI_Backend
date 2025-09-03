@@ -7,4 +7,4 @@ class ImageHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageHistory
         fields = ['id', 'user', 'image', 'uploaded_at', 'original_filename', 'content_hash']
-        read_only_fields = ['uploaded_at', 'content_hash', 'user']
+        read_only_fields = ['uploaded_at', 'user']
