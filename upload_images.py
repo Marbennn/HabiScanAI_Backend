@@ -4,7 +4,7 @@ import sys
 import hashlib
 
 folder_path = "pictures"
-image_name = "test_image.jpg"
+image_name = "haha.jpg"
 
 image_path = os.path.join(folder_path, image_name)
 url = "http://127.0.0.1:8000/api/history/images/"

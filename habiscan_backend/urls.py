@@ -19,11 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import home
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('', home),
     path('admin/', admin.site.urls),
     path('api/history/', include('imagehistory.urls')),
+    path('api/auth/token/', obtain_auth_token, name='api-token'),
 ]
 
 if settings.DEBUG:

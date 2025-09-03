@@ -1,16 +1,6 @@
-asgiref==3.9.1
-certifi==2025.7.14
-distlib==0.4.0
 Django==5.2.4
 djangorestframework==3.16.1
-filelock==3.18.0
-packaging==25.0
 Pillow==11.3.0
-pipenv==2025.0.4
-platformdirs==4.3.8
-pygame==2.6.1
-setuptools==80.9.0
-sqlparse==0.5.3
-tzdata==2025.2
-virtualenv==20.32.0
 requests==2.31.0
+# Optional (uncomment if you enable CORS in settings):
+# django-cors-headers==4.6.0

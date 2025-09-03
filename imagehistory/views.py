@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from .models import ImageHistory
 from .serializers import ImageHistorySerializer
@@ -7,9 +7,10 @@ import hashlib
 class ImageHistoryViewSet(viewsets.ModelViewSet):
     queryset = ImageHistory.objects.all().order_by('-uploaded_at')
     serializer_class = ImageHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().filter(user=self.request.user)
         h = self.request.query_params.get('hash')
         filename = self.request.query_params.get('filename')
         if h:
@@ -23,11 +24,13 @@ class ImageHistoryViewSet(viewsets.ModelViewSet):
         if not file:
             return Response({'detail': 'No image uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_bytes = file.read()
-        content_hash = hashlib.sha256(file_bytes).hexdigest()
+        hasher = hashlib.sha256()
+        for chunk in file.chunks():
+            hasher.update(chunk)
+        content_hash = hasher.hexdigest()
         file.seek(0)
 
-        existing = ImageHistory.objects.filter(content_hash=content_hash).first()
+        existing = ImageHistory.objects.filter(user=request.user, content_hash=content_hash).first()
         if existing:
             serializer = self.get_serializer(existing)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -39,6 +42,7 @@ class ImageHistoryViewSet(viewsets.ModelViewSet):
             'content_hash': content_hash
         })
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        instance = serializer.save(user=request.user)
+        serializer = self.get_serializer(instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
