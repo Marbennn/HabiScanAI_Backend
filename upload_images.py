@@ -4,34 +4,38 @@ import sys
 import hashlib
 
 folder_path = "pictures"
-image_name = "test.jpg"
+image_name = "haha.jpg"
 
 image_path = os.path.join(folder_path, image_name)
 base_url = "http://127.0.0.1:8000"
 url = f"{base_url}/api/history/images/"
 
-# Prefer supplying a token via environment: set HABISCAN_TOKEN=... in your shell
-TOKEN = os.getenv("HABISCAN_TOKEN", "")
-# Optional: if TOKEN is empty and you want this script to fetch a token, set these:
-USERNAME = os.getenv("HABISCAN_USERNAME", "")
+# Prefer supplying a JWT via environment: set HABISCAN_JWT=... (or HABISCAN_TOKEN for backward-compat)
+TOKEN = os.getenv("HABISCAN_JWT", os.getenv("HABISCAN_TOKEN", ""))
+# Optional: if TOKEN is empty and you want this script to fetch one, set these:
+USERNAME = os.getenv("HABISCAN_USERNAME", "")  # can be username or email
 PASSWORD = os.getenv("HABISCAN_PASSWORD", "")
 
 def get_headers():
     headers = {}
     if TOKEN:
-        headers["Authorization"] = f"Token {TOKEN}"
+        # JWT Bearer auth (authBE)
+        headers["Authorization"] = f"Bearer {TOKEN}"
     return headers
 
 def obtain_token(username: str, password: str) -> str:
     try:
+        # authBE SimpleJWT login
         r = requests.post(
-            f"{base_url}/api/auth/token/",
+            f"{base_url}/auth/login/",
             json={"username": username, "password": password},
             timeout=10,
         )
         r.raise_for_status()
         data = r.json()
-        return data.get("token", "")
+        # SimpleJWT returns 'access' and 'refresh'
+        access = data.get("access") or data.get("access_token")
+        return access or ""
     except Exception as e:
         print(f"Failed to obtain token: {e}")
         return ""

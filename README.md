@@ -57,44 +57,45 @@ python manage.py runserver
 - Server: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin/
 
-### 3) Authentication (Token-based)
+### 3) Authentication (JWT via authBE)
 
-1. Obtain token (PowerShell)
+1. Obtain access token (PowerShell)
 ```powershell
 $body = @{ username = "your_username"; password = "your_password" } | ConvertTo-Json
-$response = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/auth/token/" -ContentType "application/json" -Body $body
-$token = $response.token
-$env:HABISCAN_TOKEN = $token
+$response = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/auth/login/" -ContentType "application/json" -Body $body
+$access = $response.access
+$refresh = $response.refresh
+$env:HABISCAN_JWT = $access
 ```
 
 2. Use token in subsequent requests
-Add header: `Authorization: Token <TOKEN>`
+Add header: `Authorization: Bearer <ACCESS_TOKEN>`
 
 ### 4) Image History API
 
 - List current user history (PowerShell)
 ```powershell
 $token = $env:HABISCAN_TOKEN
-Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Token $token" }
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Bearer $env:HABISCAN_JWT" }
 ```
 
 - Upload new image (PowerShell)
 ```powershell
 $token = $env:HABISCAN_TOKEN
-Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Token $token" } -Form @{ image = Get-Item ".\pictures\test_image.jpg" }
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/history/images/" -Headers @{ "Authorization" = "Bearer $env:HABISCAN_JWT" } -Form @{ image = Get-Item ".\pictures\test_image.jpg" }
 ```
 
 - Delete single image
 ```powershell
 $token = $env:HABISCAN_TOKEN
-Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/123/" -Headers @{ "Authorization" = "Token $token" }
+Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/123/" -Headers @{ "Authorization" = "Bearer $env:HABISCAN_JWT" }
 ```
 
 - Bulk delete multiple images
 ```powershell
 $token = $env:HABISCAN_TOKEN
 $body = @{ ids = @(1, 2, 3) } | ConvertTo-Json
-Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/bulk_delete/" -Headers @{ "Authorization" = "Token $token"; "Content-Type" = "application/json" } -Body $body
+Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/bulk_delete/" -Headers @{ "Authorization" = "Bearer $env:HABISCAN_JWT"; "Content-Type" = "application/json" } -Body $body
 ```
 
 **Features:**
@@ -108,7 +109,7 @@ Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/history/images/
 **Upload images:**
 ```bash
 # Set token first
-$env:HABISCAN_TOKEN = "your_token_here"
+$env:HABISCAN_JWT = "your_access_token_here"
 
 # Upload image
 python upload_images.py
@@ -117,7 +118,7 @@ python upload_images.py
 **Interactive bulk delete:**
 ```bash
 # Set token first  
-$env:HABISCAN_TOKEN = "your_token_here"
+$env:HABISCAN_JWT = "your_access_token_here"
 
 # Run interactive delete script
 python test_bulk_delete.py
@@ -152,12 +153,12 @@ python manage.py sync_images --delete-unreferenced
 | POST | `/api/history/images/` | Upload new image (deduplicated) |
 | DELETE | `/api/history/images/{id}/` | Delete single image |
 | DELETE | `/api/history/images/bulk_delete/` | Delete multiple images |
-| POST | `/api/auth/token/` | Get authentication token |
+| POST | `/auth/login/` | Obtain JWT access/refresh |
 
 ### 8) Mobile/Web Integration Tips
 
 - Store the user token securely (Keychain/Keystore/SecureStorage)
-- Always send `Authorization: Token <TOKEN>` header
+- Always send `Authorization: Bearer <ACCESS_TOKEN>` header
 - Use pagination when listing history: `?page=1` (20 items per page)
 - Handle deduplication: same image returns existing record with status 200
 - Use bulk delete for better UX when removing multiple images

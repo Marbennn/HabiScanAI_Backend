@@ -2,5 +2,8 @@ Django==5.2.4
 djangorestframework==3.16.1
 Pillow==11.3.0
 requests==2.31.0
-# Optional (uncomment if you enable CORS in settings):
-# django-cors-headers==4.6.0
+django-cors-headers==4.6.0
+djangorestframework-simplejwt
+django-allauth
+dj-rest-auth
+google-auth

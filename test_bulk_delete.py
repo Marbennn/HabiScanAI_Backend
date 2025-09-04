@@ -4,12 +4,12 @@ import json
 
 # Configuration
 BASE_URL = "http://127.0.0.1:8000"
-TOKEN = os.getenv("HABISCAN_TOKEN", "")
+TOKEN = os.getenv("HABISCAN_JWT", os.getenv("HABISCAN_TOKEN", ""))
 
 def get_headers():
     headers = {"Content-Type": "application/json"}
     if TOKEN:
-        headers["Authorization"] = f"Token {TOKEN}"
+        headers["Authorization"] = f"Bearer {TOKEN}"
     return headers
 
 def list_images():
@@ -110,8 +110,8 @@ def confirm_deletion(selected_images):
 
 def main():
     if not TOKEN:
-        print("❌ Please set HABISCAN_TOKEN environment variable")
-        print("   Example: $env:HABISCAN_TOKEN = 'your_token_here'")
+        print("❌ Please set HABISCAN_JWT environment variable (or HABISCAN_TOKEN)")
+        print("   Example: $env:HABISCAN_JWT = 'your_access_token_here'")
         return
     
     print("🔍 Listing current images...")
